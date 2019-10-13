@@ -25,6 +25,17 @@ services:
       - 8000:80/tcp
     restart: unless-stopped
 
+  backend:
+    build: ./backend
+    environment:
+      POSTGRESQL_CONNECTION_URL: postgres://postgres:password@postgres:5432/postgres
+    ports:
+      - 5000:5000/tcp
+      - 6000:6000/tcp
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
   postgres:
     image: postgres:12.0-alpine
     environment:
@@ -36,5 +47,7 @@ services:
   bot:
     build: ./bot
     environment:
-      BACKEND: http://host.docker.internal:5000
+      BACKEND: http://backend:5000
     restart: unless-stopped
+    depends_on:
+      - backend
