@@ -10,7 +10,6 @@ from psycopg2.pool import ThreadedConnectionPool
 from app.models.stats import Stats
 from app.models.todo import Todo
 from app.repository.base import Repository
-from app.utils.delay import random_delay, rare_delay
 
 
 class PostgreSQLRepository(Repository):
@@ -139,7 +138,6 @@ class PostgreSQLRepository(Repository):
             else:
                 return Todo(id=id_, text=row[0], active=row[1])
 
-    @rare_delay(delay=1.5, probability=0.2)
     def list(self) -> Tuple[Todo, ...]:
         todos = []
 
@@ -151,7 +149,6 @@ class PostgreSQLRepository(Repository):
 
         return tuple(todos)
 
-    @random_delay(min_delay=0.5, max_delay=2.0)
     def insert(self, text: str) -> UUID:
         with self._cursor() as curs:
             curs.execute(self.SQL.INSERT, {"text": text, "active": True})
@@ -167,7 +164,6 @@ class PostgreSQLRepository(Repository):
             curs.execute(self.SQL.ACTIVATE, {"id": id_, "active": True})
             return curs.rowcount > 0
 
-    @rare_delay(delay=3.0, probability=0.1)
     def deactivate(self, id_: UUID) -> bool:
         with self._cursor() as curs:
             curs.execute(self.SQL.DEACTIVATE, {"id": id_, "active": False})
