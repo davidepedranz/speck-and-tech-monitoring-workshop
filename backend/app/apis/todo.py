@@ -35,8 +35,6 @@ def make_todos_blueprint(repository: Repository) -> Blueprint:
             return "", HTTPStatus.UNSUPPORTED_MEDIA_TYPE
         else:
             text = request.json["text"]
-            if "speck" in text.lower():
-                return "", HTTPStatus.INTERNAL_SERVER_ERROR
             try:
                 id_ = repository.insert(text=text)
                 return jsonify(id=id_), HTTPStatus.CREATED
