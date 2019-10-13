@@ -3,8 +3,10 @@ from typing import NoReturn
 
 from flask import Flask, Response
 from prometheus_client.exposition import start_http_server as run_prometheus_http_server
+from prometheus_client.registry import REGISTRY
 
 from app.apis.todo import make_todos_blueprint
+from app.metrics.collector import TodosCollector
 from app.metrics.flask import register_prometheus
 from app.repository.base import Repository
 from app.repository.instrumented import InstrumentedRepository
@@ -33,11 +35,12 @@ def run_prometheus() -> None:
 
 
 def register_custom_metrics(repository: Repository) -> None:
-    # TODO (3): register a custom collector to export the number of Todos
+    # TASK (3): register a custom collector to export the number of Todos
     #           in the database broken down by status (active vs inactive)
-    # HINT: you can use `instrumented_repository.stats()` to get the Todos number
-    # HINT: https://github.com/prometheus/client_python#custom-collectors
-    pass
+    # SOLUTION: register the `TodosCollector` to the default `REGISTRY`
+    #           (please checkout the TodoCollector code for the implementation details)
+    collector = TodosCollector(repository)
+    REGISTRY.register(collector)
 
 
 def run_flask_app(repository: Repository) -> NoReturn:

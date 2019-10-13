@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import request, Flask, Response
+from prometheus_client import Counter
 from prometheus_client.registry import REGISTRY
 
 
@@ -12,11 +13,24 @@ def register_prometheus(app: Flask, registry=REGISTRY) -> None:
     :param registry: Metrics registry to expose, defaults to default Prometheus registry.
     """
 
+    counter = Counter(
+        namespace="app",
+        subsystem="flask",
+        name="http_request",
+        unit="total",
+        documentation="Total number of HTTP requests handled by Flask",
+        labelnames=("endpoint", "status_code"),
+        registry=registry,
+    )
+
     def after(response: Response) -> Response:
         endpoint = _get_endpoint()
         status_code = _get_status_code(response)
 
-        # TODO (1): count the number of calls by Flask endpoint and status_code
+        # TASK (1): count the number of calls by Flask endpoint and status_code
+        # SOLUTION: we create a new `Counter` object and increment it with the correct labels
+        #           (one for the endpoint and one for the status_code) for each request
+        counter.labels(endpoint=endpoint, status_code=status_code).inc()
 
         return response
 
